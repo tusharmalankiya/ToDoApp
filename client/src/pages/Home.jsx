@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Sidebar from '../components/Sidebar';
 import { toast } from 'react-toastify';
-import MenuIcon from '../components/MenuIcon';
+import {LogoutIcon, MenuIcon} from '../components/Icons';
+import { useAuth } from '../contexts/AuthContext';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(undefined);
-  // const [currentCategory, setCurrentCategory] = useState(undefined);
+  const { user } = useAuth();
   const [taskInput, setTaskInput] = useState("");
   const [tasks, setTasks] = useState([]);
   const [isOpened, setIsOpened] = useState(window.screen.width > 768);
@@ -20,16 +20,10 @@ const Home = () => {
   const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
-    async function fetchData() {
-      if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
-        console.log("Not found");
-        // navigate("/login");
-      } else {
-        setUser(await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)));
-      }
+    if(!user){
+      navigate("/login");
     }
-    fetchData();
-  }, [])
+  }, [user])
 
   useEffect(() => {
     setSelectedCategory(taskCategories[0]);
@@ -87,6 +81,7 @@ const Home = () => {
         <section className='home'>
         <div className='menu-icon-container'>
           <MenuIcon isOpened={isOpened} handleSidebar={handleSidebar} />
+          <LogoutIcon  />
         </div>
           {/* <div className='searchbar-container'>
             <input placeholder='search' />
@@ -99,7 +94,8 @@ const Home = () => {
                   name="task"
                   value={taskInput}
                   onChange={(e) => setTaskInput(e.target.value)}
-                  placeholder='Enter task' />
+                  placeholder='Enter task'
+                  autoComplete='off' />
                 <button type="submit">Add Task</button>
               </form>
               {tasks.map((task, index) => {
@@ -156,6 +152,14 @@ overflow-y: auto;
   align-items: center;
 }
 
+& .menu-icon-container{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px;
+
+}
+
 @media screen and (max-width: 768px){
   width: ${props => (props.$isOpened ? "0%" : "100%")};
   padding: 0;
@@ -163,6 +167,7 @@ overflow-y: auto;
   & .menu-icon-container{
     position: absolute;
     right: 20px;
+    margin: 0;
   }
 }
 

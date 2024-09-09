@@ -1,17 +1,26 @@
 import axios from 'axios';
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { registerAPI } from '../utils/APIs';
 import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [values, setValues] = useState({
     username:"",
     email:"",
     password:"",
     confirmPassword:""
 })
+
+useEffect(()=>{
+  if(user){
+    navigate("/");
+  }
+}, [user])
 
   const handleValues = (e) =>{
     setValues({...values, [e.target.name]:e.target.value});
@@ -74,7 +83,8 @@ const handleSubmit = async (e) =>{
           type="text"
           value={values.username}
           onChange={handleValues}
-          placeholder='Username' />
+          placeholder='Username'
+          autoComplete='off' />
         </div>
         <div>
           <input 
@@ -82,7 +92,8 @@ const handleSubmit = async (e) =>{
           type="email"
           value={values.email}
           onChange={handleValues}
-          placeholder='Email' />
+          placeholder='Email'
+          autoComplete='off' />
         </div>
         <div>
           <input 
@@ -90,7 +101,8 @@ const handleSubmit = async (e) =>{
           value={values.password}
           name="password"
           onChange={handleValues}
-          placeholder='Password' />
+          placeholder='Password'
+          autoComplete='off' />
         </div>
         <div>
           <input
@@ -98,7 +110,8 @@ const handleSubmit = async (e) =>{
           value={values.confirmpassword}
           name="confirmPassword"
           onChange={handleValues}
-          placeholder='Confirm password' />
+          placeholder='Confirm password'
+          autoComplete='off' />
         </div>
         <button type="submit"> Sign Up </button>
 

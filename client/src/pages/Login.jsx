@@ -4,10 +4,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import styled from 'styled-components';
 import { loginAPI } from '../utils/APIs';
-// import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
-    // const { user, login } = useAuth();
+    const { user, login } = useAuth();
     // const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
     const [values, setValues] = useState({
@@ -16,13 +16,10 @@ const Login = () => {
     });
 
     useEffect(() => {
-        const fetchUser = async () =>{
-            if(localStorage.getItem("user")){
-                navigate("/");
-            }
+        if(user){
+            navigate("/");
         }
-        fetchUser();
-    }, [])
+    }, [user])
 
     const handleValues = (e) =>{
         setValues({...values, [e.target.name]:e.target.value});
@@ -49,8 +46,8 @@ const Login = () => {
         try{
             const res = await axios.post(loginAPI, values);
             if(res.data.status === true){
-                toast.success("Loggged In");
-                // login(res.data.user);
+                toast.success("Logged In");
+                login(res.data.user);
             }else{
                 toast.error(res.data.message)
             }
@@ -65,14 +62,16 @@ const Login = () => {
     return (<>
         <Container>
             <h1>Login</h1>
-        <form onSubmit={handleSubmit} autoComplete='off'>
+        <form onSubmit={handleSubmit}>
             <div>
                 <input 
                 name = "username"
                 type="text"
                 value={values.username}
                 onChange={handleValues}
-                placeholder='Username' />
+                placeholder='Username'
+                autoComplete='off'
+                 />
             </div>
             <div>
                 <input 
@@ -80,7 +79,9 @@ const Login = () => {
                 type="password"
                 value={values.password}
                 onChange={handleValues}
-                placeholder='Password' />
+                placeholder='Password' 
+                autoComplete='off'
+                />
             </div>
             <button type="submit"> Login </button>
         </form>

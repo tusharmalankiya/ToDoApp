@@ -11,19 +11,19 @@ export const AuthContextProvider = ({ children }) => {
   // Simulate login (replace with actual login logic)
   const login = async (userData) => {
     setUser(userData); // Store user data after successful login
-    localStorage.setItem("user", JSON.stringify(userData)); // Save user in local storage
+    localStorage.setItem(process.env.REACT_APP_LOCALHOST_KEY, JSON.stringify(userData)); // Save user in local storage
   };
 
   // Simulate logout (replace with actual logout logic)
   const logout = () => {
     setUser(null); // Clear user data
-    localStorage.removeItem("user"); // Remove user from local storage
+    localStorage.removeItem(process.env.REACT_APP_LOCALHOST_KEY); // Remove user from local storage
   };
 
   // Check if user is already logged in (when the app loads)
   useEffect(() => {
     const fetch = async () =>{
-        const storedUser = localStorage.getItem("user");
+        const storedUser = localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY);
         if (storedUser) {
             setUser(await JSON.parse(storedUser));
             console.log(user);

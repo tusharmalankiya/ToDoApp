@@ -58,9 +58,11 @@ const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, 
                 <ul>
                     <form onSubmit={handleCategory}>
                         <input
+                            type='text'
                             value={taskCategoryInput}
                             onChange={(e) => setTaskCategoryInput(e.target.value)}
-                            placeholder='Add new category' />
+                            placeholder='Add new category'
+                            autoComplete='off' />
                         <button type="submit">Add</button>
                     </form>
                     {taskCategories.map((category, index) => {
@@ -70,7 +72,7 @@ const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, 
                                 <input type="text"
                                  value={newCategory}
                                  onChange={(e)=>setNewCategory(e.target.value)}
-
+                                 autoComplete='off'
                                  /> :
 
                                 <span onClick={() => SelectCategory(category)}>
@@ -142,6 +144,7 @@ transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        margin:5px 0;
 
         & input[type=text]{
             width: 100%;
