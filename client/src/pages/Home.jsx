@@ -2,17 +2,25 @@ import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Sidebar from '../components/Sidebar';
+import { toast } from 'react-toastify';
+import MenuIcon from '../components/MenuIcon';
 
 const Home = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState(undefined);
+  // const [currentCategory, setCurrentCategory] = useState(undefined);
   const [taskInput, setTaskInput] = useState("");
   const [tasks, setTasks] = useState([]);
   const [isOpened, setIsOpened] = useState(window.screen.width > 768);
+  const [taskCategories, setTaskCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(undefined);
+
+  //for editing
+  const [editId, setEditId] = useState(null);
+  const [newTask, setNewTask] = useState("");
 
   useEffect(() => {
     async function fetchData() {
-      setTasks([...tasks, {name:"Task 1", status:true}, {name: "Task 2", status:true}]);
       if (!localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)) {
         console.log("Not found");
         // navigate("/login");
@@ -23,41 +31,104 @@ const Home = () => {
     fetchData();
   }, [])
 
-  const handleTask = (e) =>{
+  useEffect(() => {
+    setSelectedCategory(taskCategories[0]);
+  }, [])
+
+  const handleTask = (e, id) => {
     e.preventDefault();
-    if(taskInput.length > 0){
-      setTasks([...tasks, {name:taskInput, status: false}]);
+    console.log(id);
+    if (taskInput.length > 0) {
+      setTasks([...tasks, { id: Math.random().toString(16).slice(2), categoryId: id, name: taskInput, status: false }]);
       setTaskInput("");
+    } else {
+      return toast.error("Enter task name");
     }
+  }
+
+  const SelectCategory = (category) => {
+    console.log(category);
+    setSelectedCategory(category);
+    if (window.screen.width <= 768) {
+      setIsOpened(!isOpened);
+    }
+  }
+
+  const handleDeleteTask = (task) => {
+    setTasks(tasks.filter(item => item !== task));
+  }
+
+  const handleTaskStatus = (e, task) => {
+    setTasks(tasks.map(item => item === task ? { ...task, status: e.target.checked } : item));
+  }
+
+  const handleEditTask = (task) => {
+    setEditId(task.id);
+    setNewTask(task.name);
+  }
+
+  const handleSaveTask = (id) => {
+    setTasks(tasks.map(task => task.id === id ? { ...task, name: newTask } : task));
+    setEditId(null);
+    setNewTask("");
+  }
+
+  const handleSidebar = () => {
+    setIsOpened(!isOpened);
   }
 
   return (
     <>
       <Container>
-        <Sidebar isOpened={isOpened} setIsOpened={setIsOpened} />
+        <Sidebar
+          setTasks={setTasks}
+          tasks={tasks}
+          selectedCategory={selectedCategory} SelectCategory={SelectCategory} isOpened={isOpened} setIsOpened={setIsOpened} taskCategories={taskCategories} setTaskCategories={setTaskCategories} />
         <section className='home'>
-          <div className='searchbar-container'>
+        <div className='menu-icon-container'>
+          <MenuIcon isOpened={isOpened} handleSidebar={handleSidebar} />
+        </div>
+          {/* <div className='searchbar-container'>
             <input placeholder='search' />
-          </div>
-          <h2>Tasks</h2>
-          <div className='tasks-container'>
-            <form onSubmit={handleTask}>
-              <input 
-              name="task"
-              value={taskInput}
-              onChange={(e)=>setTaskInput(e.target.value)}
-              placeholder='Enter task' />
-              <button type="submit">Add Task</button>
-            </form>
-            {tasks.map((task, index)=>{
-              return (
-            <label key={index} className='task-container'>
-              <input type="checkbox" defaultChecked={task.status} />
-              {task.name}
-            </label>
-              )
-            })}
-          </div>
+          </div> */}
+          {selectedCategory ? <>
+            <h2>{selectedCategory?.title}</h2>
+            <div className='tasks-container'>
+              <form onSubmit={(e) => handleTask(e, selectedCategory?.id)}>
+                <input
+                  name="task"
+                  value={taskInput}
+                  onChange={(e) => setTaskInput(e.target.value)}
+                  placeholder='Enter task' />
+                <button type="submit">Add Task</button>
+              </form>
+              {tasks.map((task, index) => {
+                if (task?.categoryId === selectedCategory?.id) {
+                  return (
+
+                    <label key={index} className='task-container'>
+                      {
+                        task.id === editId ?
+                          <input type='text'
+                            value={newTask}
+                            onChange={(e) => setNewTask(e.target.value)}
+                          />
+                          : <>
+                            <input type="checkbox" defaultChecked={task.status} onChange={(e) => handleTaskStatus(e, task)} />
+                            {task.name}
+                          </>
+                      }
+                      {editId === task.id ?
+                        <button onClick={() => handleSaveTask(task.id)}>Save</button> :
+                        <button onClick={() => handleEditTask(task)}>Edit</button>
+                      }
+                      <button onClick={() => handleDeleteTask(task)}>Delete</button>
+                    </label>
+                  )
+                }
+              })}
+            </div>
+          </> : <h1>No Tasks</h1>}
         </section>
       </Container>
     </>
@@ -70,17 +141,29 @@ const Container = styled.div`
 height: 100%;
 width:100%;
 display: flex;
+overflow: hidden;
 
 & .home{
 width: 100%;
 height: 100%;
 padding: 0 20px;
-overflow: auto;
+overflow-y: auto;
 
+& h1{
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 @media screen and (max-width: 768px){
-  width: ${props => (props.$isOpened ? "100%" : "0%")};
-  padding: ${props => (props.$isOpened ? "20px" : "0")};
+  width: ${props => (props.$isOpened ? "0%" : "100%")};
+  padding: 0;
+
+  & .menu-icon-container{
+    position: absolute;
+    right: 20px;
+  }
 }
 
 & .searchbar-container{
@@ -103,20 +186,35 @@ overflow: auto;
 & h2{
   text-align: center;
   margin: 20px;
+  margin-top:70px;
+  font-size:45px;
 }
 
 & .tasks-container{
 font-size: 20px;
+${'' /* overflow: auto; */}
+${'' /* border: 1px solid red; */}
+${'' /* height: 100%; */}
 
 & .task-container{
   display: flex;
-  gap: 20px;
+  width: 100%;
+  gap: 10px;
   margin: 20px 0;
 
-  & input{
+  & input[type=checkbox]{
     height: 30px;
     width: 30px;
     border-radius: 100px;
+  }
+
+  & input[type=text]{
+    padding: 5px;
+    font-size: 16px;
+  }
+
+  & button{
+    padding: 5px;
   }
 }
 

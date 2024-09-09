@@ -11,3 +11,9 @@
   overflow: hidden;
   padding: 0 15px;
 }
+
+@media screen and (max-width: 768px) {
+  .App{
+    padding: 0 10px;
+  }
+}
