@@ -1,0 +1,13 @@
+
+.App{
+  height: 100dvh;
+  width: 100dvw;
+  background-color: var(--main-bgcolor);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  overflow: hidden;
+  padding: 0 15px;
+}
