@@ -15,7 +15,7 @@ const Home = () => {
   const [taskInput, setTaskInput] = useState("");
   const [tasks, setTasks] = useState([]);
   const [isOpened, setIsOpened] = useState(window.screen.width > 768);
-  const [taskCategories, setTaskCategories] = useState([]);
+  const [taskCategories, setTaskCategories] = useState(undefined);
   const [selectedCategory, setSelectedCategory] = useState(undefined);
 
   const [loading, setLoading] = useState(true);
@@ -51,6 +51,7 @@ const Home = () => {
         toast.error(err.message);
       }
     }
+
     if(user && selectedCategory){
       fetchTasks();
       setLoading(false);
@@ -60,7 +61,12 @@ const Home = () => {
 
   useEffect(() => {
     if(taskCategories){
-      setSelectedCategory(taskCategories[0]);
+      if(taskCategories.length > 0){
+        setSelectedCategory(taskCategories[0]);
+      }
+      else if(taskCategories.length === 0){
+        setSelectedCategory([]);
+      }
     }
   }, [taskCategories])
 
@@ -96,8 +102,8 @@ const Home = () => {
   }
 
   const handleDeleteTask = async (task) => {
+    setLoading(true);
     try{
-      setLoading(true);
       const res = await axios.delete(`${tasksAPI}/${task.id}`);
       if(res.data.status === true){
         const new_tasks = tasks.filter(item => item.id !== task.id);
@@ -107,11 +113,11 @@ const Home = () => {
       }else{
         toast.error(res.data.message);
       }
-      setLoading(false);
     }catch(err){
       console.log(err);
       toast.error(err.message);
     }
+    setLoading(false);
   }
 
   const handleTaskStatus = async (e, task) => {
@@ -188,7 +194,7 @@ const Home = () => {
           {/* <div className='searchbar-container'>
             <input placeholder='search' />
           </div> */}
-          {selectedCategory ? <>
+          {selectedCategory && selectedCategory.length !== 0 ? <>
             <h2>{selectedCategory?.title}</h2>
             <div className='tasks-container'>
               <form onSubmit={(e) => handleTask(e, selectedCategory?.id)}>

@@ -3,9 +3,12 @@ import styled from 'styled-components'
 import { toast } from 'react-toastify';
 import { categoriesAPI } from '../utils/APIs';
 import axios from 'axios';
+import Loader from './Loader';
 
 const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOpened, setIsOpened, taskCategories, setTaskCategories }) => {
     const [taskCategoryInput, setTaskCategoryInput] = useState("");
+
+    const [loading, setLoading] = useState(true);
 
     // edit category
     const [editCategoryId, setEditCategoryId] = useState(null);
@@ -32,6 +35,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
         }
         if(user){
             fetchData();
+            setLoading(false);
         }
     }, [user])
 
@@ -41,7 +45,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
             toast.error("Enter category name");
             return;
         }
-
+        setLoading(true);
         // const new_category = { id: Math.random().toString(16).slice(2), title: taskCategoryInput, userId: user.id};
         const new_category = {title: taskCategoryInput, userId: user.id};
         try{
@@ -64,11 +68,12 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
             console.log(err);
             toast.error(err.message);
         }
-
+        setLoading(false);
     }
 
     
     const handleDeleteCategory = async (category) => {
+        setLoading(true);
         try{
             const res = await axios.delete(`${categoriesAPI}/${category.id}`);
             if(res.data.status === true){
@@ -85,6 +90,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
             console.log(err);
             toast.error(err.message);
         }
+        setLoading(false);
 
     }
 
@@ -94,6 +100,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
     }
 
     const handleSaveCategory = async (cat) => {
+        setLoading(true);
         try{
             const res = await axios.patch(categoriesAPI,
                 {
@@ -116,11 +123,12 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
             console.log(err);
             toast.error(err.message);
         }
-
+        setLoading(false);
     }
     return (<>
-
         <Container $isOpened={isOpened}>
+        {loading ? 
+            <Loader /> :<>
             <nav>
                 <h2>Menu</h2>
             </nav>
@@ -136,7 +144,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
                             autoComplete='off' />
                         <button type="submit">Add</button>
                     </form>
-                    {taskCategories.map((category, index) => {
+                    {taskCategories?.map((category, index) => {
                         return (
                             <li key={index} className={`block-item ${category?.id === selectedCategory?.id && 'active'}`} >
                             {category?.id === editCategoryId ?
@@ -163,6 +171,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
                     })}
                 </ul>
             </div>
+            </> }
             {/* <div className='menu-block'>
                 <h3>Notes</h3>
                 <ul>

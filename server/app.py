@@ -89,7 +89,7 @@ def categories():
         data = request.get_json()
         print("patch data",data)
         try:
-            isCategory = db.execute("SELECT * FROM categories WHERE title = ? AND userId = ?", data['title'], data['userId'])
+            isCategory = db.execute("SELECT * FROM categories WHERE title = ? AND userId = ? AND categories.id != ?", data['title'], data['userId'], data['categoryId'])
             if len(isCategory) > 0:
                 return jsonify({"status":False, "message":"Category already exists"})
             db.execute("UPDATE categories SET title = ? WHERE id = ?", data['title'], data['categoryId'])
@@ -138,7 +138,7 @@ def tasks():
         print(data)
         if data['action'] == "NAME_CHANGE":        
             try:
-                isTask = db.execute("SELECT * FROM tasks WHERE name = ? AND categoryId = ? AND userId = ?", data['name'], data['categoryId'], data['userId'])
+                isTask = db.execute("SELECT * FROM tasks WHERE name = ? AND categoryId = ? AND userId = ? AND tasks.id != ?", data['name'], data['categoryId'], data['userId'], data['taskId'])
                 if len(isTask) > 0:
                     return jsonify({"status": False, "message":"Task already exists"})
                 taskId = db.execute("UPDATE tasks SET name = ? WHERE tasks.id = ?", data['name'], data['taskId'])

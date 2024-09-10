@@ -20,7 +20,7 @@ useEffect(()=>{
   if(user){
     navigate("/");
   }
-}, [user])
+}, [user, navigate])
 
   const handleValues = (e) =>{
     setValues({...values, [e.target.name]:e.target.value});
