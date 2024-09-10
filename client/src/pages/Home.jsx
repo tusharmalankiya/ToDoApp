@@ -5,6 +5,8 @@ import Sidebar from '../components/Sidebar';
 import { toast } from 'react-toastify';
 import {LogoutIcon, MenuIcon} from '../components/Icons';
 import { useAuth } from '../contexts/AuthContext';
+import axios from 'axios';
+import { tasksAPI } from '../utils/APIs';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -25,35 +27,100 @@ const Home = () => {
     }
   }, [user])
 
+  useEffect(()=>{
+    const fetchTasks = async () =>{
+      try{
+        const res = await axios.get(tasksAPI, {
+          params:{
+            userId: user.id,
+            categoryId: selectedCategory.id
+          }
+        });
+        if(res.data.status === true){
+          setTasks(res.data.tasks);
+          setTaskInput("");
+          toast.success(res.data.message);
+        }else{
+          toast.error(res.data.message);
+        }
+      }catch(err){
+        console.log(err);
+        toast.error(err.message);
+      }
+    }
+    if(user && selectedCategory){
+      fetchTasks();
+    }
+
+  }, [user, selectedCategory])
+
   useEffect(() => {
     setSelectedCategory(taskCategories[0]);
   }, [])
 
-  const handleTask = (e, id) => {
+  const handleTask = async (e, categoryId) => {
     e.preventDefault();
-    console.log(id);
     if (taskInput.length > 0) {
-      setTasks([...tasks, { id: Math.random().toString(16).slice(2), categoryId: id, name: taskInput, status: false }]);
-      setTaskInput("");
+      const new_task = {categoryId: categoryId, userId: user.id, name: taskInput};
+      try{
+        const res = await axios.post(tasksAPI, new_task);
+        if(res.data.status === true){
+          setTasks([...tasks, { ...new_task, id: res.data.taskId, completed: 0 }]);
+          setTaskInput("");
+          toast.success(res.data.message);
+        }else{
+          toast.error(res.data.message);
+        }
+      }catch(err){
+        console.log(err);
+        toast.error(err.message);
+      }
     } else {
       return toast.error("Enter task name");
     }
   }
 
   const SelectCategory = (category) => {
-    console.log(category);
     setSelectedCategory(category);
     if (window.screen.width <= 768) {
       setIsOpened(!isOpened);
     }
   }
 
-  const handleDeleteTask = (task) => {
-    setTasks(tasks.filter(item => item !== task));
+  const handleDeleteTask = async (task) => {
+    try{
+      const res = await axios.delete(`${tasksAPI}/${task.id}`);
+      if(res.data.status === true){
+        const new_tasks = tasks.filter(item => item.id !== task.id);
+        console.log(new_tasks);
+        setTasks(tasks => tasks.filter(item => item.id !== task.id));
+        toast.success(res.data.message);
+      }else{
+        toast.error(res.data.message);
+      }
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
   }
 
-  const handleTaskStatus = (e, task) => {
-    setTasks(tasks.map(item => item === task ? { ...task, status: e.target.checked } : item));
+  const handleTaskStatus = async (e, task) => {
+    try{
+      const res = await axios.patch(tasksAPI, {
+        action: 'STATUS_CHANGE',
+        taskId: task.id,
+        completed: e.target.checked        
+      });
+      if(res.data.status === true){
+        setTasks(tasks.map(item => item.id === task.id ? { ...task, completed: e.target.checked } : item));
+        toast.success(res.data.message);
+      }else{
+        toast.error(res.data.message);
+      }
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
   }
 
   const handleEditTask = (task) => {
@@ -61,10 +128,29 @@ const Home = () => {
     setNewTask(task.name);
   }
 
-  const handleSaveTask = (id) => {
-    setTasks(tasks.map(task => task.id === id ? { ...task, name: newTask } : task));
-    setEditId(null);
-    setNewTask("");
+  const handleSaveTask = async (taskId) => {
+    try{
+      const res = await axios.patch(tasksAPI, {
+        action: 'NAME_CHANGE',
+        taskId: taskId,
+        name: newTask,
+        userId: user.id,
+        categoryId: selectedCategory.id
+      });
+      if(res.data.status === true){
+        setTasks(tasks.map(task => task.id === taskId ? { ...task, name: newTask } : task));
+        setEditId(null);
+        setNewTask("");
+        toast.success(res.data.message);
+      }else{
+        toast.error(res.data.message);
+      }
+    }catch(err){
+      console.log(err);
+      toast.error(err.message);
+    }
+
+
   }
 
   const handleSidebar = () => {
@@ -75,6 +161,7 @@ const Home = () => {
     <>
       <Container>
         <Sidebar
+          user={user}
           setTasks={setTasks}
           tasks={tasks}
           selectedCategory={selectedCategory} SelectCategory={SelectCategory} isOpened={isOpened} setIsOpened={setIsOpened} taskCategories={taskCategories} setTaskCategories={setTaskCategories} />
@@ -101,7 +188,6 @@ const Home = () => {
               {tasks.map((task, index) => {
                 if (task?.categoryId === selectedCategory?.id) {
                   return (
-
                     <label key={index} className='task-container'>
                       {
                         task.id === editId ?
@@ -110,7 +196,7 @@ const Home = () => {
                             onChange={(e) => setNewTask(e.target.value)}
                           />
                           : <>
-                            <input type="checkbox" defaultChecked={task.status} onChange={(e) => handleTaskStatus(e, task)} />
+                            <input type="checkbox" checked={task.completed} onChange={(e) => handleTaskStatus(e, task)} />
                             {task.name}
                           </>
                       }
@@ -122,6 +208,7 @@ const Home = () => {
                     </label>
                   )
                 }
+                return null;
               })}
             </div>
           </> : <h1>No Tasks</h1>}

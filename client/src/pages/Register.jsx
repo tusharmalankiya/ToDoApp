@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
-  const { user } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const [values, setValues] = useState({
     username:"",
@@ -54,15 +54,13 @@ const handleSubmit = async (e) =>{
     e.preventDefault();
 
     if(!checkValues()){
-      return
+      return;
     }
 
     try{
       const res = await axios.post(registerAPI, values);
       if(res.data.status === true){
-        delete values.confirmPassword;
-        localStorage.setItem(process.env.REACT_APP_LOCALHOST_KEY, JSON.stringify(res.data.user));
-        console.log(await JSON.parse(localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY)));
+        login(res.data.user);
         toast.success("Registered");
       }else{
         toast.error(res.data.message);

@@ -1,13 +1,39 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 import { toast } from 'react-toastify';
+import { categoriesAPI } from '../utils/APIs';
+import axios from 'axios';
 
-const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, setIsOpened, taskCategories, setTaskCategories }) => {
+const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOpened, setIsOpened, taskCategories, setTaskCategories }) => {
     const [taskCategoryInput, setTaskCategoryInput] = useState("");
 
     // edit category
     const [editCategoryId, setEditCategoryId] = useState(null);
     const [newCategory, setNewCategory] = useState("");
+
+    useEffect(()=>{
+        const fetchData = async () =>{
+            try{
+                const res = await axios.get(categoriesAPI, {
+                    params:{
+                        userId: user.id
+                    }
+                });
+                if(res.data.status === true){
+                    setTaskCategories(res.data.categories);
+                    toast.success(res.data.message);
+                }else{
+                    toast.error(res.data.message);
+                }
+            }catch(err){
+                console.log(err);
+                toast.error(err.message);
+            }
+        }
+        if(user){
+            fetchData();
+        }
+    }, [user])
 
     const handleCategory = async (e) => {
         e.preventDefault();
@@ -15,23 +41,50 @@ const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, 
             toast.error("Enter category name");
             return;
         }
-        const new_category = { id: Math.random().toString(16).slice(2), title: taskCategoryInput };
-        setTaskCategories([...taskCategories, new_category]);
-        SelectCategory(new_category);
-        setTaskCategoryInput("");
 
-        if (window.screen.width <= 768) {
-            setIsOpened(!isOpened);
+        // const new_category = { id: Math.random().toString(16).slice(2), title: taskCategoryInput, userId: user.id};
+        const new_category = {title: taskCategoryInput, userId: user.id};
+        try{
+            console.log(taskCategories);
+            const res = await axios.post(categoriesAPI, new_category);
+            if(res.data.status === true){
+                toast.success(res.data.message);
+                // new_category.id = res.data.categoryId;
+                setTaskCategories([...taskCategories, {...new_category, id: res.data.categoryId}]);
+                SelectCategory(new_category);
+
+                if (window.screen.width <= 768) {
+                    setIsOpened(!isOpened);
+                }
+            }else{
+                toast.error(res.data.message);
+            }
+            setTaskCategoryInput("");
+        }catch(err){
+            console.log(err);
+            toast.error(err.message);
         }
+
     }
 
     
-    const handleDeleteCategory = (category) => {
-        setTasks(tasks.filter(task => task.categoryId !== category.id));
-        const updateCategories = taskCategories.filter(item => item.id !== category.id);
+    const handleDeleteCategory = async (category) => {
+        try{
+            const res = await axios.delete(`${categoriesAPI}/${category.id}`);
+            if(res.data.status === true){
+                toast.success(res.data.message);
+                setTasks(tasks.filter(task => task.categoryId !== category.id));
+                const updateCategories = taskCategories.filter(item => item.id !== category.id);
+                setTaskCategories(updateCategories);
+                SelectCategory(updateCategories[0]);
+            }else{
+                toast.error(res.data.message);
+            }
 
-        setTaskCategories(updateCategories);
-        SelectCategory(updateCategories[0]);
+        }catch(err){
+            console.log(err);
+            toast.error(err.message);
+        }
 
     }
 
@@ -40,11 +93,29 @@ const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, 
         setNewCategory(category.title);
     }
 
-    const handleSaveCategory = (cat) => {
-        setTaskCategories(taskCategories.map(category=> category.id === cat.id ? {...category, title: newCategory}: category));
-        setEditCategoryId(null);
-        SelectCategory({...cat, title: newCategory});
-        setNewCategory("");
+    const handleSaveCategory = async (cat) => {
+        try{
+            const res = await axios.patch(categoriesAPI,
+                {
+                    categoryId: cat.id,
+                    title: newCategory,
+                    userId: user.id
+                }
+            )
+            console.log(res.data);
+            if(res.data.status === true){
+                toast.success(res.data.message);
+                setTaskCategories(taskCategories.map(category=> category.id === cat.id ? {...category, title: newCategory}: category));
+                setEditCategoryId(null);
+                SelectCategory({...cat, title: newCategory});
+                setNewCategory("");
+            }else{
+                toast.error(res.data.message);
+            }
+        }catch(err){
+            console.log(err);
+            toast.error(err.message);
+        }
 
     }
     return (<>
@@ -67,8 +138,8 @@ const Sidebar = ({ tasks, setTasks, selectedCategory, SelectCategory, isOpened, 
                     </form>
                     {taskCategories.map((category, index) => {
                         return (
-                            <li key={index} className={`block-item ${category.id === selectedCategory.id && 'active'}`} >
-                            {category.id === editCategoryId ?
+                            <li key={index} className={`block-item ${category?.id === selectedCategory?.id && 'active'}`} >
+                            {category?.id === editCategoryId ?
                                 <input type="text"
                                  value={newCategory}
                                  onChange={(e)=>setNewCategory(e.target.value)}

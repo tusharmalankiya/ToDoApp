@@ -26,9 +26,9 @@ export const AuthContextProvider = ({ children }) => {
         const storedUser = localStorage.getItem(process.env.REACT_APP_LOCALHOST_KEY);
         if (storedUser) {
             setUser(await JSON.parse(storedUser));
-            console.log(user);
         }
     }
+    
     fetch();
   }, []);
 
