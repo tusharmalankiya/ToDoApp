@@ -55,8 +55,10 @@ const Home = () => {
   }, [user, selectedCategory])
 
   useEffect(() => {
-    setSelectedCategory(taskCategories[0]);
-  }, [])
+    if(taskCategories){
+      setSelectedCategory(taskCategories[0]);
+    }
+  }, [taskCategories])
 
   const handleTask = async (e, categoryId) => {
     e.preventDefault();
@@ -112,7 +114,7 @@ const Home = () => {
         completed: e.target.checked        
       });
       if(res.data.status === true){
-        setTasks(tasks.map(item => item.id === task.id ? { ...task, completed: e.target.checked } : item));
+        setTasks(tasks.map(item => item.id === task.id ? { ...task, completed: !task.completed } : item));
         toast.success(res.data.message);
       }else{
         toast.error(res.data.message);
@@ -127,6 +129,11 @@ const Home = () => {
     setEditId(task.id);
     setNewTask(task.name);
   }
+
+  const [status, setStatus] = useState(false);
+  // const handleStatus = (e, task) =>{
+
+  // }
 
   const handleSaveTask = async (taskId) => {
     try{
