@@ -7,6 +7,7 @@ import {LogoutIcon, MenuIcon} from '../components/Icons';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 import { tasksAPI } from '../utils/APIs';
+import Loader from '../components/Loader';
 
 const Home = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const Home = () => {
   const [taskCategories, setTaskCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(undefined);
 
+  const [loading, setLoading] = useState(true);
+
   //for editing
   const [editId, setEditId] = useState(null);
   const [newTask, setNewTask] = useState("");
@@ -25,7 +28,7 @@ const Home = () => {
     if(!user){
       navigate("/login");
     }
-  }, [user])
+  }, [user, navigate])
 
   useEffect(()=>{
     const fetchTasks = async () =>{
@@ -50,6 +53,7 @@ const Home = () => {
     }
     if(user && selectedCategory){
       fetchTasks();
+      setLoading(false);
     }
 
   }, [user, selectedCategory])
@@ -63,6 +67,7 @@ const Home = () => {
   const handleTask = async (e, categoryId) => {
     e.preventDefault();
     if (taskInput.length > 0) {
+      setLoading(true);
       const new_task = {categoryId: categoryId, userId: user.id, name: taskInput};
       try{
         const res = await axios.post(tasksAPI, new_task);
@@ -77,6 +82,7 @@ const Home = () => {
         console.log(err);
         toast.error(err.message);
       }
+      setLoading(false);
     } else {
       return toast.error("Enter task name");
     }
@@ -91,6 +97,7 @@ const Home = () => {
 
   const handleDeleteTask = async (task) => {
     try{
+      setLoading(true);
       const res = await axios.delete(`${tasksAPI}/${task.id}`);
       if(res.data.status === true){
         const new_tasks = tasks.filter(item => item.id !== task.id);
@@ -100,6 +107,7 @@ const Home = () => {
       }else{
         toast.error(res.data.message);
       }
+      setLoading(false);
     }catch(err){
       console.log(err);
       toast.error(err.message);
@@ -107,6 +115,7 @@ const Home = () => {
   }
 
   const handleTaskStatus = async (e, task) => {
+    setLoading(true);
     try{
       const res = await axios.patch(tasksAPI, {
         action: 'STATUS_CHANGE',
@@ -123,6 +132,7 @@ const Home = () => {
       console.log(err);
       toast.error(err.message);
     }
+    setLoading(false);
   }
 
   const handleEditTask = (task) => {
@@ -130,12 +140,8 @@ const Home = () => {
     setNewTask(task.name);
   }
 
-  const [status, setStatus] = useState(false);
-  // const handleStatus = (e, task) =>{
-
-  // }
-
   const handleSaveTask = async (taskId) => {
+    setLoading(true);
     try{
       const res = await axios.patch(tasksAPI, {
         action: 'NAME_CHANGE',
@@ -156,6 +162,7 @@ const Home = () => {
       console.log(err);
       toast.error(err.message);
     }
+    setLoading(false);
 
 
   }
@@ -166,12 +173,13 @@ const Home = () => {
 
   return (
     <>
-      <Container>
+    <Container>
         <Sidebar
           user={user}
           setTasks={setTasks}
           tasks={tasks}
           selectedCategory={selectedCategory} SelectCategory={SelectCategory} isOpened={isOpened} setIsOpened={setIsOpened} taskCategories={taskCategories} setTaskCategories={setTaskCategories} />
+    {loading ? <Loader /> : 
         <section className='home'>
         <div className='menu-icon-container'>
           <MenuIcon isOpened={isOpened} handleSidebar={handleSidebar} />
@@ -204,7 +212,9 @@ const Home = () => {
                           />
                           : <>
                             <input type="checkbox" checked={task.completed} onChange={(e) => handleTaskStatus(e, task)} />
+                            <span className={`${task.completed && 'completed'}`}>  
                             {task.name}
+                            </span>
                           </>
                       }
                       {editId === task.id ?
@@ -220,6 +230,7 @@ const Home = () => {
             </div>
           </> : <h1>No Tasks</h1>}
         </section>
+    }
       </Container>
     </>
   )
@@ -265,7 +276,7 @@ overflow-y: auto;
   }
 }
 
-& .searchbar-container{
+${'' /* & .searchbar-container{
   display: flex;
   align-items: center;
   justify-content: center;
@@ -281,7 +292,7 @@ overflow-y: auto;
     border-radius: 5px;
     color: white;
   }
-}
+} */}
 & h2{
   text-align: center;
   margin: 20px;
@@ -300,6 +311,10 @@ ${'' /* height: 100%; */}
   width: 100%;
   gap: 10px;
   margin: 20px 0;
+
+  & .completed{
+    text-decoration: line-through;
+  }
 
   & input[type=checkbox]{
     height: 30px;
