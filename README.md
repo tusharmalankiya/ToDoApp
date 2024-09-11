@@ -2,8 +2,7 @@
 
 #### Video Demo: https://www.youtube.com/watch?v=-x7vuVV1weA
 
-## Description:  
-A simple and efficient Todo application built using **React** for the frontend and **Flask** for the backend. This app allows users to manage their tasks by creating, editing, and deleting todos.
+#### Description:  A simple and efficient Todo application built using **React** for the frontend and **Flask** for the backend. This app allows users to manage their tasks by creating, editing, and deleting todos.
 
 ## Features
 
