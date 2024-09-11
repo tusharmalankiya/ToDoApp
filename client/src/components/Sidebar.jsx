@@ -133,7 +133,7 @@ const Sidebar = ({ user, tasks, setTasks, selectedCategory, SelectCategory, isOp
                 <h2>Menu</h2>
             </nav>
             <div className='menu-block'>
-                <h3>Task Category</h3>
+                <h3>Task Categories</h3>
                 <ul>
                     <form onSubmit={handleCategory}>
                         <input
@@ -200,7 +200,6 @@ overflow: hidden;
 background-color: #000;
 box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
 transition: all 0.3s ease;
-
 
 & nav{
     display: flex;
@@ -284,10 +283,14 @@ transition: all 0.3s ease;
 
 
 @media screen and (max-width: 768px){
-max-width: ${props => (props.$isOpened ? "100%" : "0%")};
-min-width: ${props => props.$isOpened ? "100%" : "0"};
-padding: 15px ${props => props.$isOpened ? "10px" : "0"};
-width: ${props => props.$isOpened ? "100%" : "0%"};
+position: absolute;
+left: ${props => props.$isOpened ? "0%" : "-100%"};
+width: 100dvw;
+height: 100dvh;
+overflow-y: auto;
+max-width: 100%;
+min-width: 100%;
+padding: 15px 10px;
 }
 
 `;

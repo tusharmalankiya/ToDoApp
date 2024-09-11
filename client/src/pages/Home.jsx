@@ -179,7 +179,7 @@ const Home = () => {
 
   return (
     <>
-    <Container>
+    <Container $isOpened={isOpened}>
         <Sidebar
           user={user}
           setTasks={setTasks}
@@ -272,8 +272,8 @@ overflow-y: auto;
 }
 
 @media screen and (max-width: 768px){
-  width: ${props => (props.$isOpened ? "0%" : "100%")};
   padding: 0;
+  width: 100%;
 
   & .menu-icon-container{
     position: absolute;
