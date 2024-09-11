@@ -2,7 +2,10 @@
 
 #### Video Demo: https://www.youtube.com/watch?v=-x7vuVV1weA
 
-#### Description:  A simple and efficient Todo application built using **React** for the frontend and **Flask** for the backend. This app allows users to manage their tasks by creating, editing, and deleting todos.
+## Description:
+A simple and efficient Todo application built using **React** for the frontend and **Flask** for the backend. This app allows users to manage their tasks by creating, editing, and deleting respective categories and tasks. To get started, first, user has to create an account. after account has been created, user can log in using the credentials and see the homepage where user can create categories and tasks. but before any tasks can be created, user has to make category for the task. categories can be made just by entering category name in the input field. once the category is created, user can select catgory by clicking on it and add tasks into that perticular catogory. tasks can also be modified by just clicking on the respective buttons. such as to edit the task name, user can click on edit button and can change its name and click on the save button to save it. similarly, delete button is used to delete the task. there is also a checkbox beside the name of the task which can be used to mark that task as completed and also can be marked as incomplete if it is already marked as completed. same way, categories can be modified and deleted.
+
+I built this project using React.js for the front end and Flask, a Python microframework, for the backend. I used SQLite database to store user information, tasks and categories. This app uses Flask for storing all data in a database and the front-end communicates with the back-end via API calls to retrieve, update, and delete tasks and categories.
 
 ## Features
 
@@ -53,9 +56,9 @@
         ```bash
         yarn install
         ```
-    
+
     - Start the React development server:
-        
+
         ```bash
         yarn start
         ```
